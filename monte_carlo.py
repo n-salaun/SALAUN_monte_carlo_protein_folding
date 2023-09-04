@@ -1,6 +1,33 @@
 import numpy as np
 import random
 
+class AminoAcid:
+    summary = {}
+
+    def __init__(self, number, classHP):
+        self.number = number
+        self.classHP = classHP
+        self.xcoord = 0
+        self.ycoord = 0
+
+        AminoAcid.summary[f"aa{self.number}{self.classHP}"] = (self.xcoord, self.ycoord)
+
+    def __repr__(self):
+        return f"aa{self.number}{self.classHP}, x={self.xcoord}, y={self.ycoord})"
+        
+    #Moveset
+    def end_move():
+        return()
+    
+    def corner_move():
+        return()
+    
+    def crankshaft_move():
+        return()
+
+    def pull_move():
+        return()
+
 ###Functions
 def fasta_read(name):
     """The function read a FASTA file, and return the proteic sequence in HP
