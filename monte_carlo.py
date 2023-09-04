@@ -14,7 +14,21 @@ class AminoAcid:
 
     def __repr__(self):
         return f"aa{self.number}{self.classHP}, x={self.xcoord}, y={self.ycoord})"
-        
+
+    @staticmethod
+    def calculate_total_energy():
+        total_energy = 0
+        for key, (x, y) in AminoAcid.summary.items():
+            if key.endswith('H'):
+                neighbors = [
+                    (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)
+                ]
+                for neighbor_x, neighbor_y in neighbors:
+                    neighbor_key = f"aa{neighbor_x + 1}{neighbor_y}H"
+                    if neighbor_key in AminoAcid.summary:
+                        total_energy -= 1
+        return total_energy / 2
+    
     #Moveset
     def end_move():
         return()
