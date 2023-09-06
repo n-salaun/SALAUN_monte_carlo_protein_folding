@@ -2,45 +2,84 @@ import numpy as np
 import random
 
 class AminoAcid:
+    # The summary holds a dictionary with the info of all Amino Acid instances
     summary = {}
 
-    def __init__(self, number, classHP):
+    def __init__(self, number, class_hp):
         self.number = number
-        self.classHP = classHP
+        self.class_hp = class_hp
         self.xcoord = 0
         self.ycoord = 0
 
-        AminoAcid.summary[f"aa{self.number}{self.classHP}"] = (self.xcoord, self.ycoord)
+        AminoAcid.summary[f"aa{self.number}"] = (self.class_hp, self.xcoord, self.ycoord)
 
-    def __repr__(self):
-        return f"aa{self.number}{self.classHP}, x={self.xcoord}, y={self.ycoord})"
+    def set_coordinates(self, x, y):
+        self.xcoord = x
+        self.ycoord = y
+
+    def get_coordinates(self):
+        return self.xcoord, self.ycoord
+
+    @staticmethod
+    def initialize(mode="linear"):
+        coordinates = {}
+
+        if mode == "random":
+            aa_key = "aa1"
+            coordinates[aa_key] = (0, 0)
+            AminoAcid.summary[aa_key] = (AminoAcid(1, 0).class_hp, 0, 0)
+
+            for number in range(2, len(AminoAcid.summary) + 1):
+                aa_key = f"aa{number}"
+                neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+                while True:
+                    random_neighbor = random.choice(neighbors)
+                    x, y = AminoAcid.summary[f"aa{number - 1}"][1], AminoAcid.summary[f"aa{number - 1}"][2]
+                    new_x, new_y = x + random_neighbor[0], y + random_neighbor[1]
+                    if (new_x, new_y) not in coordinates.values():
+                        coordinates[aa_key] = (new_x, new_y)
+                        AminoAcid.summary[aa_key] = (AminoAcid(number, 0).class_hp, new_x, new_y)
+                        break
+
+        else:
+            if mode != "linear":
+                print("Format de mode invalide, devrait être 'random' ou 'linear', procédant avec 'linear'")
+
+            for number in range(1, len(AminoAcid.summary) + 1):
+                aa_key = f"aa{number}"
+                coordinates[aa_key] = (number - 1, 0)
+                AminoAcid.summary[aa_key] = (AminoAcid(number, 0).class_hp, number - 1, 0)
+
+        print(coordinates)
 
     @staticmethod
     def calculate_total_energy():
         total_energy = 0
-        for key, (x, y) in AminoAcid.summary.items():
-            if key.endswith('H'):
+        for key, (class_hp, x, y) in AminoAcid.summary.items():
+            if class_hp == "H":
                 neighbors = [
                     (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)
                 ]
                 for neighbor_x, neighbor_y in neighbors:
-                    neighbor_key = f"aa{neighbor_x + 1}{neighbor_y}H"
-                    if neighbor_key in AminoAcid.summary:
+                    neighbor_key = f"aa{neighbor_x + 1}{neighbor_y}"
+                    if neighbor_key in AminoAcid.summary and AminoAcid.summary[neighbor_key][0] == 'H':
                         total_energy -= 1
         return total_energy / 2
-    
-    #Moveset
-    def end_move():
-        return()
-    
-    def corner_move():
-        return()
-    
-    def crankshaft_move():
-        return()
 
-    def pull_move():
-        return()
+    # Moveset
+    def end_move(self):
+        return ()
+
+    def corner_move(self):
+        return ()
+
+    def crankshaft_move(self):
+        return ()
+
+    def pull_move(self):
+        return ()
+
 
 ###Functions
 def fasta_read(name):
@@ -64,32 +103,25 @@ def fasta_read(name):
     #return string of the final sequence in the HP model
     return ''.join(FINAL_SEQ)
 
-def energy_calculator():
-    """Function to calculate the total energy of the protein"""
-    return(energy)
-
-def check_available_moves():
-    return()
-
-#Movesets
-def corner_move():
-    return()
-    
-def crankshaft_move():
-    return()
-
-def pull_move():
-    return()
-
 ###Main
 
-#Select a random amino acid
+# Créer des instances d'AminoAcid
+aa1 = AminoAcid(1, "ClassA")
+aa2 = AminoAcid(2, "ClassB")
+aa3 = AminoAcid(3, "ClassC")
 
-#check possible moves
+# Afficher les informations des instances
+print(aa1.number, aa1.class_hp, aa1.get_coordinates())
+print(aa2.number, aa2.class_hp, aa2.get_coordinates())
+print(aa3.number, aa3.class_hp, aa3.get_coordinates())
 
-#select a move
+# Initialiser les coordonnées de manière aléatoire
+AminoAcid.initialize("random")
 
-#apply the move
+# Afficher les nouvelles coordonnées
+print(aa1.number, aa1.class_hp, aa1.get_coordinates())
+print(aa2.number, aa2.class_hp, aa2.get_coordinates())
+print(aa3.number, aa3.class_hp, aa3.get_coordinates())
 
-#check if the molecule is more stable, or accepted
+print(AminoAcid.calculate_total_energy())
 
