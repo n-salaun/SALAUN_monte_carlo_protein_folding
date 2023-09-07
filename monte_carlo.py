@@ -1,11 +1,18 @@
 import numpy as np
 import random
 
-class AminoAcid:
+class AminoAcidDictionary(type):
+    def __iter__(cls):
+        return iter(cls._registry)
+
+
+class AminoAcid(object, metaclass=AminoAcidDictionary):
     # The summary holds a dictionary with the info of all Amino Acid instances
     summary = {}
+    _registry = []
 
     def __init__(self, number, class_hp):
+        self._registry.append(self)
         self.number = number
         self.class_hp = class_hp
         self.xcoord = 0
@@ -27,7 +34,7 @@ class AminoAcid:
         if mode == "random":
             aa_key = "aa1"
             coordinates[aa_key] = (0, 0)
-            AminoAcid.summary[aa_key] = (AminoAcid(1, 0).class_hp, 0, 0)
+            AminoAcid.summary[aa_key] = (AminoAcid(1).class_hp, 0, 0)
 
             for number in range(2, len(AminoAcid.summary) + 1):
                 aa_key = f"aa{number}"
@@ -46,12 +53,16 @@ class AminoAcid:
             if mode != "linear":
                 print("Format de mode invalide, devrait être 'random' ou 'linear', procédant avec 'linear'")
 
-            for number in range(1, len(AminoAcid.summary) + 1):
-                aa_key = f"aa{number}"
-                coordinates[aa_key] = (number - 1, 0)
-                AminoAcid.summary[aa_key] = (AminoAcid(number, 0).class_hp, number - 1, 0)
+            for aa_object in AminoAcid:
+                aa_key = f"aa{aa_object.number}"
+                coordinates[aa_key] = (aa_object.number - 1, 0)
+                AminoAcid.summary[aa_key] = (aa_object.class_hp, aa_object.number - 1, 0)
 
-        print(coordinates)
+        for aaobject in AminoAcid:
+            aa_key = f"aa{aaobject.number}"
+            new_x, new_y = coordinates[aa_key]
+            aaobject.set_coordinates(new_x, new_y)
+
 
     @staticmethod
     def calculate_total_energy():
@@ -106,22 +117,31 @@ def fasta_read(name):
 ###Main
 
 # Créer des instances d'AminoAcid
-aa1 = AminoAcid(1, "ClassA")
-aa2 = AminoAcid(2, "ClassB")
-aa3 = AminoAcid(3, "ClassC")
+aa1 = AminoAcid(1, "H")
+aa2 = AminoAcid(2, "P")
+aa3 = AminoAcid(3, "H")
+aa4 = AminoAcid(4, "H")
+aa5 = AminoAcid(5, "P")
+aa6 = AminoAcid(6, "H")
 
 # Afficher les informations des instances
 print(aa1.number, aa1.class_hp, aa1.get_coordinates())
 print(aa2.number, aa2.class_hp, aa2.get_coordinates())
 print(aa3.number, aa3.class_hp, aa3.get_coordinates())
+print(aa4.number, aa4.class_hp, aa4.get_coordinates())
+print(aa5.number, aa5.class_hp, aa5.get_coordinates())
+print(aa6.number, aa6.class_hp, aa6.get_coordinates())
 
 # Initialiser les coordonnées de manière aléatoire
-AminoAcid.initialize("random")
+AminoAcid.initialize("linear")
 
 # Afficher les nouvelles coordonnées
 print(aa1.number, aa1.class_hp, aa1.get_coordinates())
 print(aa2.number, aa2.class_hp, aa2.get_coordinates())
 print(aa3.number, aa3.class_hp, aa3.get_coordinates())
+print(aa4.number, aa4.class_hp, aa4.get_coordinates())
+print(aa5.number, aa5.class_hp, aa5.get_coordinates())
+print(aa6.number, aa6.class_hp, aa6.get_coordinates())
 
+print(AminoAcid.summary)
 print(AminoAcid.calculate_total_energy())
-
