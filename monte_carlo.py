@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class AminoAcidDictionary(type):
     def __iter__(cls):
         return iter(cls._registry)
@@ -29,25 +30,27 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
     @staticmethod
     def initialize(mode="linear"):
-        coordinates = {}
 
         if mode == "random":
-            aa_key = "aa1"
-            coordinates[aa_key] = (0, 0)
-            AminoAcid.summary[aa_key] = (AminoAcid(1).class_hp, 0, 0)
+            used_coordinates = []
+            neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            for aa_object in AminoAcid:
+                if aa_object == AminoAcid._registry[0]:
+                    aa_object.set_coordinates(0, 0)
+                    used_coordinates.append((0, 0))
 
-            for number in range(2, len(AminoAcid.summary) + 1):
-                aa_key = f"aa{number}"
-                neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-
-                while True:
-                    random_neighbor = random.choice(neighbors)
-                    x, y = AminoAcid.summary[f"aa{number - 1}"][1], AminoAcid.summary[f"aa{number - 1}"][2]
-                    new_x, new_y = x + random_neighbor[0], y + random_neighbor[1]
-                    if (new_x, new_y) not in coordinates.values():
-                        coordinates[aa_key] = (new_x, new_y)
-                        AminoAcid.summary[aa_key] = (AminoAcid(number, 0).class_hp, new_x, new_y)
-                        break
+                else:
+                    loop_breaker = False
+                    while not loop_breaker:
+                        aa_key = f"aa{aa_object.number}"
+                        last_x, last_y = used_coordinates[-1]
+                        random_neighbor = random.choice(neighbors)
+                        new_x, new_y = last_x + random_neighbor[0], last_y + random_neighbor[1]
+                        if (new_x, new_y) not in used_coordinates:
+                            aa_object.set_coordinates(new_x, new_y)
+                            used_coordinates.append((new_x, new_y))
+                            AminoAcid.summary[aa_key] = (aa_object.class_hp, new_x, new_y)
+                            loop_breaker = True
 
         else:
             if mode != "linear":
@@ -55,13 +58,8 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
             for aa_object in AminoAcid:
                 aa_key = f"aa{aa_object.number}"
-                coordinates[aa_key] = (aa_object.number - 1, 0)
+                aa_object.set_coordinates(aa_object.number - 1, 0)
                 AminoAcid.summary[aa_key] = (aa_object.class_hp, aa_object.number - 1, 0)
-
-        for aaobject in AminoAcid:
-            aa_key = f"aa{aaobject.number}"
-            new_x, new_y = coordinates[aa_key]
-            aaobject.set_coordinates(new_x, new_y)
 
 
     @staticmethod
@@ -93,55 +91,41 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
 
 ###Functions
+
 def fasta_read(name):
     """The function read a FASTA file, and return the proteic sequence in HP
     model type"""
     SEQ = []
-    #read the file and select only the sequence
+    # read the file and select only the sequence
     with open(name, "r") as filout:
         for lines in filout:
             if not lines.startswith(">"):
                 SEQ.extend(lines.strip())
-    
-    #Change the sequence from amino acid to HP model
-    FINAL_SEQ = []
+
+    # Change the sequence from amino acid to HP model
+    final_seq = []
     for char in SEQ:
         if char in "VIFLMCW":
-            FINAL_SEQ.append("H")
+            final_seq.append("H")
         else:
-            FINAL_SEQ.append("P")
-            
-    #return string of the final sequence in the HP model
-    return ''.join(FINAL_SEQ)
+            final_seq.append("P")
+
+    # return string of the final sequence in the HP model
+    return ''.join(final_seq)
 
 ###Main
 
-# Créer des instances d'AminoAcid
-aa1 = AminoAcid(1, "H")
-aa2 = AminoAcid(2, "P")
-aa3 = AminoAcid(3, "H")
-aa4 = AminoAcid(4, "H")
-aa5 = AminoAcid(5, "P")
-aa6 = AminoAcid(6, "H")
 
-# Afficher les informations des instances
-print(aa1.number, aa1.class_hp, aa1.get_coordinates())
-print(aa2.number, aa2.class_hp, aa2.get_coordinates())
-print(aa3.number, aa3.class_hp, aa3.get_coordinates())
-print(aa4.number, aa4.class_hp, aa4.get_coordinates())
-print(aa5.number, aa5.class_hp, aa5.get_coordinates())
-print(aa6.number, aa6.class_hp, aa6.get_coordinates())
-
-# Initialiser les coordonnées de manière aléatoire
-AminoAcid.initialize("linear")
-
-# Afficher les nouvelles coordonnées
-print(aa1.number, aa1.class_hp, aa1.get_coordinates())
-print(aa2.number, aa2.class_hp, aa2.get_coordinates())
-print(aa3.number, aa3.class_hp, aa3.get_coordinates())
-print(aa4.number, aa4.class_hp, aa4.get_coordinates())
-print(aa5.number, aa5.class_hp, aa5.get_coordinates())
-print(aa6.number, aa6.class_hp, aa6.get_coordinates())
-
-print(AminoAcid.summary)
+prot_seq = "PHPHPPPHPHPPHPHHPPHPHPPPHPHPHPHPPH"
+amino_acids = [AminoAcid(i + 1, char) for i, char in enumerate(prot_seq)]
+for amino_acid in amino_acids:
+    print(amino_acid.number, amino_acid.class_hp, amino_acid.get_coordinates())
 print(AminoAcid.calculate_total_energy())
+print(AminoAcid.summary)
+
+AminoAcid.initialize("random")
+
+for amino_acid in amino_acids:
+    print(amino_acid.number, amino_acid.class_hp, amino_acid.get_coordinates())
+print(AminoAcid.calculate_total_energy())
+print(AminoAcid.summary)
