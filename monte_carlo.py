@@ -30,37 +30,52 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
     @staticmethod
     def initialize(mode="linear"):
-
         if mode == "random":
-            used_coordinates = []
-            neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-            for aa_object in AminoAcid:
-                if aa_object == AminoAcid._registry[0]:
-                    aa_object.set_coordinates(0, 0)
-                    used_coordinates.append((0, 0))
+            for attempt in range(5):  # Number of attempts to distribute amino acids randomly
+                used_coordinates = []
+                neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
+                for aa_object in AminoAcid:
+                    if aa_object == AminoAcid._registry[0]:
+                        aa_object.set_coordinates(0, 0)
+                        used_coordinates.append((0, 0))
+                    else:
+                        loop_breaker = False
+                        iteration = 0
+                        while not loop_breaker:
+                            iteration += 1
+                            aa_key = f"aa{aa_object.number}"
+                            last_x, last_y = used_coordinates[-1]
+                            random_neighbor = random.choice(neighbors)
+                            new_x, new_y = last_x + random_neighbor[0], last_y + random_neighbor[1]
+                            if (new_x, new_y) not in used_coordinates:
+                                aa_object.set_coordinates(new_x, new_y)
+                                used_coordinates.append((new_x, new_y))
+                                AminoAcid.summary[aa_key] = (aa_object.class_hp, new_x, new_y)
+                                loop_breaker = True
+
+                            if iteration > 50:
+                                print(f"Unable to find a random coordinate for amino acid {aa_object.number}")
+                                break
+                        if iteration > 50:
+                            break
+
+                if len(used_coordinates) == len(AminoAcid._registry):
+                    break  # Successfully distributed all amino acids
                 else:
-                    loop_breaker = False
-                    while not loop_breaker:
-                        aa_key = f"aa{aa_object.number}"
-                        last_x, last_y = used_coordinates[-1]
-                        random_neighbor = random.choice(neighbors)
-                        new_x, new_y = last_x + random_neighbor[0], last_y + random_neighbor[1]
-                        if (new_x, new_y) not in used_coordinates:
-                            aa_object.set_coordinates(new_x, new_y)
-                            used_coordinates.append((new_x, new_y))
-                            AminoAcid.summary[aa_key] = (aa_object.class_hp, new_x, new_y)
-                            loop_breaker = True
+                    print("Resetting initialization and trying again...")
+                    used_coordinates = []  # Reset used_coordinates for the next attempt
 
+            if len(used_coordinates) < len(AminoAcid._registry):
+                print("Failed to distribute all amino acids after multiple attempts.")
         else:
             if mode != "linear":
-                print("Format de mode invalide, devrait être 'random' ou 'linear', procédant avec 'linear'")
+                print("Invalid mode format, should be 'random' or 'linear', proceeding with 'linear'")
 
             for aa_object in AminoAcid:
                 aa_key = f"aa{aa_object.number}"
                 aa_object.set_coordinates(aa_object.number - 1, 0)
                 AminoAcid.summary[aa_key] = (aa_object.class_hp, aa_object.number - 1, 0)
-
 
     @staticmethod
     def calculate_total_energy():
@@ -118,10 +133,6 @@ def fasta_read(name):
 
 prot_seq = "PHPHPPPHPHPPHPHHPPHPHPPPHPHPHPHPPH"
 amino_acids = [AminoAcid(i + 1, char) for i, char in enumerate(prot_seq)]
-for amino_acid in amino_acids:
-    print(amino_acid.number, amino_acid.class_hp, amino_acid.get_coordinates())
-print(AminoAcid.calculate_total_energy())
-print(AminoAcid.summary)
 
 AminoAcid.initialize("random")
 
