@@ -1,14 +1,16 @@
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 
 class AminoAcidDictionary(type):
+    """This is a metaclass that allows you to create a dictionary of all Amino Acid instances."""
     def __iter__(cls):
         return iter(cls._registry)
 
 
 class AminoAcid(object, metaclass=AminoAcidDictionary):
-    # The summary holds a dictionary with the info of all Amino Acid instances
+    # The summary holds a dictionary with the info of all Amino Acid
     summary = {}
     _registry = []
 
@@ -80,16 +82,64 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
     @staticmethod
     def calculate_total_energy():
         total_energy = 0
-        for key, (class_hp, x, y) in AminoAcid.summary.items():
-            if class_hp == "H":
+        for i, aa_object in enumerate(AminoAcid):
+            if aa_object.class_hp == 'H':
                 neighbors = [
-                    (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)
+                    (aa_object.xcoord + 1, aa_object.ycoord),
+                    (aa_object.xcoord - 1, aa_object.ycoord),
+                    (aa_object.xcoord, aa_object.ycoord + 1),
+                    (aa_object.xcoord, aa_object.ycoord - 1)
                 ]
+
                 for neighbor_x, neighbor_y in neighbors:
-                    neighbor_key = f"aa{neighbor_x + 1}{neighbor_y}"
-                    if neighbor_key in AminoAcid.summary and AminoAcid.summary[neighbor_key][0] == 'H':
+                    neighbor_coords = (neighbor_x, neighbor_y)
+                    neighbor_aa = None
+
+                    # Find the neighbor amino acid based on its coordinates
+                    for aa_obj in AminoAcid:
+                        if aa_obj.get_coordinates() == neighbor_coords:
+                            neighbor_aa = aa_obj
+                            break
+
+                    if (
+                            neighbor_aa is not None and
+                            neighbor_aa.class_hp == 'H' and
+                            (abs(i - AminoAcid._registry.index(neighbor_aa)) != 1)
+                    ):
                         total_energy -= 1
         return total_energy / 2
+
+    def visualize(self):
+        if self.class_hp == 'P':
+            marker_color = 'red'
+            marker_style = 'o'  # Use a circle for P class amino acids
+            label = "P Class"
+        else:
+            marker_color = 'blue'
+            marker_style = 's'  # Use a square for H class amino acids
+            label = "H Class"
+
+        plt.plot([self.xcoord], [self.ycoord], marker_style, color=marker_color, markersize=5, zorder=2)
+
+    @staticmethod
+    def visualize_molecule():
+        plt.figure(figsize=(8, 8))
+        legend_added = False  # Variable to keep track of whether the legend has been added
+
+        for aa_object in AminoAcid:
+            aa_object.visualize()
+
+        # Draw lines connecting amino acids
+        for i in range(len(AminoAcid._registry) - 1):
+            aa1 = AminoAcid._registry[i]
+            aa2 = AminoAcid._registry[i + 1]
+            plt.plot([aa1.xcoord, aa2.xcoord], [aa1.ycoord, aa2.ycoord], 'black', zorder=1)
+
+        plt.title('Amino Acid Molecule Visualization')
+        plt.plot([], [], 'ro', markersize=5, label='P Class')
+        plt.plot([], [], 'bs', markersize=5, label='H Class')
+        plt.legend()
+        plt.show()
 
     # Moveset
     def end_move(self):
@@ -130,13 +180,9 @@ def fasta_read(name):
 
 ###Main
 
-
 prot_seq = "PHPHPPPHPHPPHPHHPPHPHPPPHPHPHPHPPH"
 amino_acids = [AminoAcid(i + 1, char) for i, char in enumerate(prot_seq)]
 
 AminoAcid.initialize("random")
-
-for amino_acid in amino_acids:
-    print(amino_acid.number, amino_acid.class_hp, amino_acid.get_coordinates())
 print(AminoAcid.calculate_total_energy())
-print(AminoAcid.summary)
+AminoAcid.visualize_molecule()
