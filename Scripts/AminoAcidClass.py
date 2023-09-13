@@ -1,7 +1,6 @@
 import math
 import random
 import matplotlib.pyplot as plt
-import numpy as np
 
 class AminoAcidDictionary(type):
     """This is a metaclass of AminoAcid to iterate through instances, or get infos about all the instances"""
