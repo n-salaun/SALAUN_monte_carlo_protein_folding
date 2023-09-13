@@ -35,7 +35,7 @@ conda activate env-montecarlo
 ### Main command 'folding.py'
 
 ```bash
-python ./Scripts/folding.py fasta_input iterations init_method -s
+python ./Scripts/folding.py fasta_input iterations init_method -s -e
 ```
 
 ### Dictionnary
@@ -45,4 +45,7 @@ fasta_input : Name of the starting sample protein
 iterations : Number of tries to move an amino acid
 init_method : Initialization method, should be either linear or random
 -s : show the first 4 frames to track the moves
+-e : Show a plot of the energy 
 ```
+
+All results will be put in the Results folder
