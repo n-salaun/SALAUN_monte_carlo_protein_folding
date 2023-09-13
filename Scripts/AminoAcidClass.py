@@ -1,6 +1,7 @@
 import math
 import random
 import matplotlib.pyplot as plt
+import numpy as np
 
 class AminoAcidDictionary(type):
     """This is a metaclass of AminoAcid to iterate through instances, or get infos about all the instances"""
@@ -62,7 +63,7 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
                 """
         if mode == "random":
-            for attempt in range(100):  # Number of attempts to distribute amino acids randomly
+            for attempt in range(10000):  # Number of attempts to distribute amino acids randomly
                 used_coordinates = []
                 neighbors = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
@@ -107,7 +108,7 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
                 aa_object.set_coordinates(aa_object.number - 1, 0)
                 AminoAcid.summary[aa_key] = (aa_object.class_hp, aa_object.number - 1, 0)
 
-    def movement(self):
+    def movement(self, threshold):
         """Simulate movement of the amino acid and accept or reject the new position"""
         possible_moves = []
         end_move = self.end_move()
@@ -147,9 +148,17 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
 
             # Calculate the new total energy
             new_total_energy = AminoAcid.calculate_total_energy()
-
+            
+            if threshold is not None:
+                K_b = 0.0019872041
+                if (new_total_energy <= prev_total_energy or
+                random.random() > math.exp(-(new_total_energy - prev_total_energy) / (threshold[0] * K_b))):
+                    return True
+                else:
+                    return False
+            
             # If the new energy is higher, revert the move
-            if new_total_energy > prev_total_energy:
+            elif new_total_energy > prev_total_energy:
                 if selected_move_type == "crankshaft":
                     for key, val in prev_coords.items():
                         AminoAcid._registry[int(key)-1].set_coordinates(val[0], val[1])
@@ -206,7 +215,7 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
         plt.plot([self.xcoord], [self.ycoord], marker_style, color=marker_color, markersize=5, zorder=2)
 
     @staticmethod
-    def visualize_molecule():
+    def visualize_molecule(name):
         """Visualize the entire molecular structure."""
         plt.figure(figsize=(15, 15))
 
@@ -223,7 +232,7 @@ class AminoAcid(object, metaclass=AminoAcidDictionary):
         plt.plot([], [], 'ro', markersize=5, label='P Class')
         plt.plot([], [], 'bs', markersize=5, label='H Class')
         plt.legend()
-        plt.show()
+        plt.savefig("./Results/" + name + ".png")
 
     @staticmethod
     def used_coordinates():
