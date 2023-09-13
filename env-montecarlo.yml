@@ -1,0 +1,9 @@
+name: env-montecarlo
+channels:
+    - defaults
+    - bioconda
+    - conda-forge
+dependencies:
+    - python
+    - matplotlib
+    - tqdm

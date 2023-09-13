@@ -19,7 +19,7 @@ def fasta_read(name):
     # Change the sequence from amino acid to HP model
     final_seq = []
     for char in SEQ:
-        if char in "VIFLMCWGYPAC":
+        if char in "VIFLMCWGPAC":
             final_seq.append("H")
         else:
             final_seq.append("P")

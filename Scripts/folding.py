@@ -19,7 +19,7 @@ pa.add_argument("-s", "--sample", action="store_true",
 args = pa.parse_args()
 
 if __name__ == "__main__":
-    prot_seq = fasta_read("../Data/" + {args.fasta_input})
+    prot_seq = fasta_read(args.fasta_input)
     amino_acids = [AminoAcidClass.AminoAcid(i + 1, char) for i, char in enumerate(prot_seq)]
     num_iterations = args.iterations
 
